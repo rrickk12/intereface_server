@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Home - Receipt and Sales Organizer{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Odoo Models</h5>
+        <p class="card-text">List available Odoo models.</p>
+        <a href="{{ url_for('odoo.models_view') }}" class="btn btn-primary">Go</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Odoo Invoices</h5>
+        <p class="card-text">Fetch invoices for February 2025.</p>
+        <a href="{{ url_for('odoo.invoices_date_range_view') }}" class="btn btn-primary">Go</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Odoo Query</h5>
+        <p class="card-text">Query any Odoo model data.</p>
+        <a href="{{ url_for('odoo.query_view') }}" class="btn btn-primary">Go</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Download Receipts</h5>
+        <p class="card-text">Download invoice attachments.</p>
+        <a href="{{ url_for('odoo.download_receipts_view') }}" class="btn btn-primary">Go</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Process Excel Data</h5>
+        <p class="card-text">Process Procfy Excel data.</p>
+        <a href="{{ url_for('procfy.excel_view') }}" class="btn btn-primary">Go</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

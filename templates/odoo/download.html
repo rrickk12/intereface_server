@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Download Receipts{% endblock %}
+{% block content %}
+<h2>Download Invoice Attachments</h2>
+
+<form id="download-form" method="post" action="/odoo/download_receipts">
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="start_date" class="form-label">Start Date</label>
+      <input type="date" class="form-control" id="start_date" name="start_date" required>
+    </div>
+    <div class="col-md-4">
+      <label for="end_date" class="form-label">End Date</label>
+      <input type="date" class="form-control" id="end_date" name="end_date" required>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="zip" name="zip">
+        <label class="form-check-label" for="zip">Generate Zip Archive</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preset Date Buttons -->
+  <div class="mb-3">
+    <button type="button" class="btn btn-secondary btn-sm preset-btn" data-range="today">Today</button>
+    <button type="button" class="btn btn-secondary btn-sm preset-btn" data-range="last_month">Last Month</button>
+    <button type="button" class="btn btn-secondary btn-sm preset-btn" data-range="this_year">This Year</button>
+  </div>
+
+  <button type="submit" id="download-btn" class="btn btn-primary">Download Receipts</button>
+</form>
+
+<!-- Spinner for Visual Feedback -->
+<div id="download-spinner" style="display: none; margin-top:20px;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p>Please wait while we download attachments...</p>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress mt-3" style="height: 25px; display: none;" id="progress-container">
+  <div class="progress-bar progress-bar-striped progress-bar-animated" id="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+</div>
+
+<!-- Display Result Messages -->
+<div id="download-result" class="mt-4"></div>
+
+<script>
+  // Preset date buttons logic.
+  document.querySelectorAll('.preset-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+      var range = this.getAttribute('data-range');
+      var startDateInput = document.getElementById('start_date');
+      var endDateInput = document.getElementById('end_date');
+      var today = new Date();
+      if (range === 'today') {
+        var todayStr = today.toISOString().split('T')[0];
+        startDateInput.value = todayStr;
+        endDateInput.value = todayStr;
+      } else if (range === 'last_month') {
+        var firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        var lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        startDateInput.value = firstDayLastMonth.toISOString().split('T')[0];
+        endDateInput.value = lastDayLastMonth.toISOString().split('T')[0];
+      } else if (range === 'this_year') {
+        var firstDayThisYear = new Date(today.getFullYear(), 0, 1);
+        var lastDayThisYear = new Date(today.getFullYear(), 11, 31);
+        startDateInput.value = firstDayThisYear.toISOString().split('T')[0];
+        endDateInput.value = lastDayThisYear.toISOString().split('T')[0];
+      }
+    });
+  });
+
+  // Intercept form submission and simulate a progress bar.
+  document.getElementById('download-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission.
+    
+    // Disable the submit button.
+    document.getElementById('download-btn').disabled = true;
+    // Hide the spinner (you can choose to show it if desired).
+    document.getElementById('download-spinner').style.display = 'none';
+    
+    // Show the progress bar.
+    var progressContainer = document.getElementById('progress-container');
+    var progressBar = document.getElementById('progress-bar');
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    progressBar.innerText = '0%';
+
+    // Simulate progress updates.
+    var progress = 0;
+    var interval = setInterval(function(){
+      progress += Math.random() * 10;
+      if (progress > 95) progress = 95; // Cap progress before final response.
+      progressBar.style.width = progress + '%';
+      progressBar.innerText = Math.floor(progress) + '%';
+    }, 1000);
+
+    // Create form data and send AJAX request.
+    var formData = new FormData(this);
+    fetch(this.action, {
+      method: this.method,
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      clearInterval(interval);
+      progressBar.style.width = '100%';
+      progressBar.innerText = '100%';
+      
+      var output = "";
+      if (data.result.messages) {
+        output += "<div class='alert alert-info' style='white-space: pre-wrap;'>" + data.result.messages + "</div>";
+      }
+      if (data.result.zip_file) {
+        output += "<button id='download-zip-btn' class='btn btn-success'>Download Zip</button>";
+      }
+      document.getElementById('download-result').innerHTML = output;
+      
+      var downloadZipBtn = document.getElementById('download-zip-btn');
+      if (downloadZipBtn) {
+        downloadZipBtn.addEventListener('click', function() {
+          window.location.href = "/odoo/download_file?file=" + encodeURIComponent(data.result.zip_file);
+        });
+      }
+      document.getElementById('download-btn').disabled = false;
+    })
+    .catch(error => {
+      clearInterval(interval);
+      console.error(error);
+      document.getElementById('download-result').innerHTML = '<div class="alert alert-danger">An error occurred.</div>';
+      document.getElementById('download-btn').disabled = false;
+    });
+  });
+</script>
+{% endblock %}

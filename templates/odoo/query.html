@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Odoo Query{% endblock %}
+{% block content %}
+<h2>Odoo Query</h2>
+<form id="query-form" method="post">
+  <div class="mb-3">
+    <label for="model_name" class="form-label">Model Name</label>
+    <input type="text" class="form-control" id="model_name" name="model_name" placeholder="e.g., res.partner" required>
+  </div>
+  <div class="form-check mb-3">
+    <input type="checkbox" class="form-check-input" id="export_csv" name="export_csv">
+    <label class="form-check-label" for="export_csv">Export to CSV</label>
+  </div>
+  <button type="submit" id="submit-btn" class="btn btn-primary">Query</button>
+</form>
+
+<!-- Spinner for visual feedback -->
+<div id="spinner" style="display: none; margin-top:20px;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p>Please wait, processing your query...</p>
+</div>
+
+<pre id="result">{{ result }}</pre>
+
+<script>
+  // When the form is submitted, disable the button and show the spinner.
+  document.getElementById('query-form').addEventListener('submit', function(event) {
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('spinner').style.display = 'block';
+  });
+</script>
+{% endblock %}

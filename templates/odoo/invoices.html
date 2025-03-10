@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Odoo Invoices{% endblock %}
+{% block content %}
+<h2>Odoo Invoices</h2>
+<form id="invoices-form" method="post">
+  <div class="mb-3">
+    <label for="start_date" class="form-label">Start Date</label>
+    <input type="date" class="form-control" id="start_date" name="start_date" required>
+  </div>
+  <div class="mb-3">
+    <label for="end_date" class="form-label">End Date</label>
+    <input type="date" class="form-control" id="end_date" name="end_date" required>
+  </div>
+  <button type="submit" id="invoices-submit-btn" class="btn btn-primary">Generate Invoices</button>
+</form>
+
+<!-- Spinner for visual feedback -->
+<div id="invoices-spinner" style="display: none; margin-top:20px;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p>Please wait while we fetch invoices...</p>
+</div>
+
+<pre id="invoices-result">{{ result|safe }}</pre>
+
+<script>
+  document.getElementById('invoices-form').addEventListener('submit', function(event) {
+    document.getElementById('invoices-submit-btn').disabled = true;
+    document.getElementById('invoices-spinner').style.display = 'block';
+  });
+</script>
+{% endblock %}

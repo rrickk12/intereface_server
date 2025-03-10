@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Process Excel Data{% endblock %}
+{% block content %}
+<h2>Process Procfy Excel Data</h2>
+<form id="excel-form" method="post">
+  <button type="submit" id="excel-submit-btn" class="btn btn-primary">Process Excel</button>
+</form>
+
+<!-- Spinner for visual feedback -->
+<div id="excel-spinner" style="display: none; margin-top:20px;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p>Please wait, processing the Excel file...</p>
+</div>
+
+<pre id="excel-result">{{ result }}</pre>
+
+<script>
+  document.getElementById('excel-form').addEventListener('submit', function(event) {
+    document.getElementById('excel-submit-btn').disabled = true;
+    document.getElementById('excel-spinner').style.display = 'block';
+  });
+</script>
+{% endblock %}
