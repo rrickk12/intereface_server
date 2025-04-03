@@ -77,28 +77,23 @@
   document.getElementById('download-form').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the default form submission.
     
-    // Disable the submit button.
     document.getElementById('download-btn').disabled = true;
-    // Hide the spinner (you can choose to show it if desired).
     document.getElementById('download-spinner').style.display = 'none';
-    
-    // Show the progress bar.
+
     var progressContainer = document.getElementById('progress-container');
     var progressBar = document.getElementById('progress-bar');
     progressContainer.style.display = 'block';
     progressBar.style.width = '0%';
     progressBar.innerText = '0%';
 
-    // Simulate progress updates.
     var progress = 0;
     var interval = setInterval(function(){
       progress += Math.random() * 10;
-      if (progress > 95) progress = 95; // Cap progress before final response.
+      if (progress > 95) progress = 95;
       progressBar.style.width = progress + '%';
       progressBar.innerText = Math.floor(progress) + '%';
     }, 1000);
 
-    // Create form data and send AJAX request.
     var formData = new FormData(this);
     fetch(this.action, {
       method: this.method,
@@ -112,22 +107,38 @@
       clearInterval(interval);
       progressBar.style.width = '100%';
       progressBar.innerText = '100%';
-      
+
       var output = "";
+
       if (data.result.messages) {
         output += "<div class='alert alert-info' style='white-space: pre-wrap;'>" + data.result.messages + "</div>";
       }
+
       if (data.result.zip_file) {
-        output += "<button id='download-zip-btn' class='btn btn-success'>Download Zip</button>";
+        output += "<button id='download-zip-btn' class='btn btn-success mt-3'>Download Zip</button>";
       }
+
+      if (data.result.files) {
+        output += "<div class='mt-4'><h5>Downloaded Attachments:</h5><ul class='list-group'>";
+        data.result.files.forEach(file => {
+          output += `<li class='list-group-item'>
+                       <a href="/odoo/download_file?file=${encodeURIComponent(file)}" target="_blank">
+                         ${file}
+                       </a>
+                     </li>`;
+        });
+        output += "</ul></div>";
+      }
+
       document.getElementById('download-result').innerHTML = output;
-      
+
       var downloadZipBtn = document.getElementById('download-zip-btn');
       if (downloadZipBtn) {
         downloadZipBtn.addEventListener('click', function() {
           window.location.href = "/odoo/download_file?file=" + encodeURIComponent(data.result.zip_file);
         });
       }
+
       document.getElementById('download-btn').disabled = false;
     })
     .catch(error => {

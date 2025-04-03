@@ -7,10 +7,34 @@
     <label for="start_date" class="form-label">Start Date</label>
     <input type="date" class="form-control" id="start_date" name="start_date" required>
   </div>
+  
+  <!-- Quick Set for Start Date -->
+  <div class="mb-3">
+    <label class="form-label">Quick Set Start Date</label>
+    <div class="btn-group" role="group" aria-label="Quick Start Date Options">
+      <button type="button" class="btn btn-secondary" onclick="setStartDate('today')">Today</button>
+      <button type="button" class="btn btn-secondary" onclick="setStartDate('week')">First Day of Week</button>
+      <button type="button" class="btn btn-secondary" onclick="setStartDate('month')">First Day of Month</button>
+      <button type="button" class="btn btn-secondary" onclick="setStartDate('year')">First Day of Year</button>
+    </div>
+  </div>
+
   <div class="mb-3">
     <label for="end_date" class="form-label">End Date</label>
     <input type="date" class="form-control" id="end_date" name="end_date" required>
   </div>
+  
+  <!-- Quick Set for End Date -->
+  <div class="mb-3">
+    <label class="form-label">Quick Set End Date</label>
+    <div class="btn-group" role="group" aria-label="Quick End Date Options">
+      <button type="button" class="btn btn-secondary" onclick="setEndDate('same')">Same Day</button>
+      <button type="button" class="btn btn-secondary" onclick="setEndDate('week')">End of Week</button>
+      <button type="button" class="btn btn-secondary" onclick="setEndDate('month')">End of Month</button>
+      <button type="button" class="btn btn-secondary" onclick="setEndDate('year')">End of Year</button>
+    </div>
+  </div>
+
   <button type="submit" id="invoices-submit-btn" class="btn btn-primary">Generate Invoices</button>
 </form>
 
@@ -25,9 +49,80 @@
 <pre id="invoices-result">{{ result|safe }}</pre>
 
 <script>
+  // Disable the submit button and display the spinner on form submit
   document.getElementById('invoices-form').addEventListener('submit', function(event) {
     document.getElementById('invoices-submit-btn').disabled = true;
     document.getElementById('invoices-spinner').style.display = 'block';
   });
+
+  // Function to set end date based on the selected shortcut option
+  function setEndDate(option) {
+    const startDateInput = document.getElementById('start_date').value;
+    if (!startDateInput) {
+      alert('Please select a start date first.');
+      return;
+    }
+    const startDate = new Date(startDateInput);
+    let endDate;
+    switch(option) {
+      case 'same':
+        endDate = startDate;
+        break;
+      case 'week':
+        // Assuming week ends on Sunday (day 0)
+        const day = startDate.getDay();
+        const diff = (7 - day) % 7;
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + diff);
+        break;
+      case 'month':
+        // Set to the last day of the current month
+        endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+        break;
+      case 'year':
+        // Set to December 31st of the current year
+        endDate = new Date(startDate.getFullYear(), 11, 31);
+        break;
+      default:
+        endDate = startDate;
+    }
+    // Format the date as YYYY-MM-DD
+    const formattedDate = endDate.toISOString().split('T')[0];
+    document.getElementById('end_date').value = formattedDate;
+  }
+
+  // Function to set start date based on the selected shortcut option
+  function setStartDate(option) {
+    let startDate = new Date();
+    switch(option) {
+      case 'today':
+        // Set to current date
+        startDate = new Date();
+        break;
+      case 'week':
+        // Set to the first day of this week (assuming Monday as the first day)
+        const currentDay = startDate.getDay();
+        // Adjust if today is Sunday (0), set previous Monday
+        if (currentDay === 0) {
+          startDate.setDate(startDate.getDate() - 6);
+        } else {
+          startDate.setDate(startDate.getDate() - (currentDay - 1));
+        }
+        break;
+      case 'month':
+        // Set to the first day of the current month
+        startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        break;
+      case 'year':
+        // Set to January 1st of the current year
+        startDate = new Date(startDate.getFullYear(), 0, 1);
+        break;
+      default:
+        startDate = new Date();
+    }
+    // Format the date as YYYY-MM-DD
+    const formattedDate = startDate.toISOString().split('T')[0];
+    document.getElementById('start_date').value = formattedDate;
+  }
 </script>
 {% endblock %}

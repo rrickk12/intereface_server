@@ -62,7 +62,8 @@ def fetch_invoices_fields_date_range(start_date, end_date):
         "partner_shipping_id",
         "payment_state",
         "invoice_partner_display_name",
-        "create_date"
+        "create_date",
+        "amount_total"
     ]
     domain = [
         ("invoice_date", ">=", start_date),
@@ -73,17 +74,17 @@ def fetch_invoices_fields_date_range(start_date, end_date):
         records = models.execute_kw(DB, uid, PASSWORD, "account.move", "search_read", [domain], {"fields": fields})
         if records:
             cleaned_records = [clean_record(rec) for rec in records]
-            # Create a folder to store generated files if it doesn't exist.
-            if not os.path.exists("downloads"):
-                os.makedirs("downloads")
-            filename = f"downloads/faturas_{start_date}_{end_date}_selected_fields.csv"
+            # Save file in a public folder (static/downloads)
+            output_dir = os.path.join("static", "downloads")
+            os.makedirs(output_dir, exist_ok=True)
+            filename = os.path.join(output_dir, f"faturas_{start_date}_{end_date}_selected_fields.csv")
             with open(filename, mode='w', newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=fields, extrasaction='ignore')
                 writer.writeheader()
                 for rec in cleaned_records:
                     writer.writerow(rec)
             # Return a link for the user to download the generated file.
-            return f"Data exported to <a href='/odoo/download_file?file={os.path.basename(filename)}'> {filename} </a>"
+            return f"Data exported to <a href='/odoo/download_file?file={os.path.basename(filename)}'> {os.path.basename(filename)} </a>"
         else:
             return "No invoices found for the selected period."
     except Exception as e:
@@ -100,7 +101,10 @@ def query_table_data(model_name, export_csv=False):
         records = [{str(k): v for k, v in rec.items()} for rec in records]
         if records:
             if export_csv:
-                filename = f"{model_name}.csv"
+                # Optionally store exported CSV in a public folder too.
+                output_dir = os.path.join("static", "downloads")
+                os.makedirs(output_dir, exist_ok=True)
+                filename = os.path.join(output_dir, f"{model_name}.csv")
                 with open(filename, mode='w', newline='', encoding='utf-8') as file:
                     writer = csv.DictWriter(file, fieldnames=fields)
                     writer.writeheader()
@@ -117,7 +121,6 @@ def query_table_data(model_name, export_csv=False):
     except Exception as e:
         return f"Error fetching data from {model_name}: {e}"
 
-
 def download_invoice_attachments(start_date, end_date, zip_archive=False):
     if not uid:
         return {"error": "Authentication failed."}
@@ -133,7 +136,8 @@ def download_invoice_attachments(start_date, end_date, zip_archive=False):
         if not invoices:
             return {"messages": f"No invoices found for the period {start_date} to {end_date}."}
 
-        DOWNLOAD_FOLDER = "nota_fiscal"
+        # Save attachments in a public folder (static/nota_fiscal)
+        DOWNLOAD_FOLDER = os.path.join("static", "nota_fiscal")
         os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
         messages = []
         downloaded_files = []  # Keep track of downloaded file paths
@@ -167,13 +171,20 @@ def download_invoice_attachments(start_date, end_date, zip_archive=False):
                 messages.append(f"No main attachment found for invoice {invoice_name}.")
 
         result = {"messages": "\n".join(messages)}
+
+        # If ZIP is requested
         if zip_archive and downloaded_files:
-            zip_filename = f"nota_fiscal/receipts_{start_date}_{end_date}.zip"
+            zip_filename = os.path.join(DOWNLOAD_FOLDER, f"receipts_{start_date}_{end_date}.zip")
             with zipfile.ZipFile(zip_filename, 'w') as zipf:
                 for file_path in downloaded_files:
                     zipf.write(file_path, arcname=os.path.basename(file_path))
             result["zip_file"] = os.path.basename(zip_filename)
-            result["messages"] += "\nZip archive created: Download Zip"
+            result["messages"] += f"\nZip archive created: {os.path.basename(zip_filename)}"
+
+        # If individual files only
+        elif not zip_archive and downloaded_files:
+            result["files"] = [os.path.basename(path) for path in downloaded_files]
+
         return result
     except Exception as e:
         return {"error": f"Error downloading attachments: {e}"}

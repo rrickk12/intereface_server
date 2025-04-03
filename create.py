@@ -6,7 +6,7 @@ files = {
     "app.py": """\
 from flask import Flask, render_template
 from blueprints.odoo import odoo_bp
-from blueprints.procfy import procfy_bp
+from blueprints.procfy import procfy
 
 def create_app():
     app = Flask(__name__)
@@ -14,7 +14,7 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(odoo_bp, url_prefix='/odoo')
-    app.register_blueprint(procfy_bp, url_prefix='/procfy')
+    app.register_blueprint(procfy, url_prefix='/procfy')
 
     # Home route with card-based homepage
     @app.route('/')
@@ -227,7 +227,7 @@ def download_receipts_view():
     "blueprints/procfy/__init__.py": """\
 from flask import Blueprint
 
-procfy_bp = Blueprint('procfy', __name__, template_folder='templates')
+procfy = Blueprint('procfy', __name__, template_folder='templates')
 
 from . import views, handlers
 """,
@@ -237,7 +237,7 @@ import openpyxl
 
 def process_excel_data():
     try:
-        workbook = openpyxl.load_workbook("modelo_importacao_procfy.xlsx")
+        workbook = openpyxl.load_workbook("modelo_Procfy_MMG.xlsx")
         sheet = workbook.active
         # Read header from first row
         cabecalho = [cell.value for cell in sheet[1]]
@@ -257,18 +257,18 @@ def process_excel_data():
             if coluna in indices_colunas:
                 col_idx = indices_colunas[coluna]
                 sheet.cell(row=2, column=col_idx).value = valor
-        workbook.save("modelo_importacao_procfy_preenchido.xlsx")
-        return "Excel processed and saved as 'modelo_importacao_procfy_preenchido.xlsx'."
+        workbook.save("modelo_Procfy_MMG_preenchido.xlsx")
+        return "Excel processed and saved as 'modelo_Procfy_MMG_preenchido.xlsx'."
     except Exception as e:
         return f"Error processing Excel: {e}"
 """,
     # Procfy views
     "blueprints/procfy/views.py": """\
 from flask import render_template, request
-from . import procfy_bp
+from . import procfy
 from .handlers import process_excel_data
 
-@procfy_bp.route('/excel', methods=['GET', 'POST'])
+@procfy.route('/excel', methods=['GET', 'POST'])
 def excel_view():
     result = ""
     if request.method == 'POST':
@@ -296,7 +296,7 @@ def excel_view():
             <li class="nav-item"><a class="nav-link" href="{{ url_for('odoo.invoices_view') }}">Odoo Invoices</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('odoo.query_view') }}">Odoo Query</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('odoo.download_receipts_view') }}">Download Receipts</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('procfy.excel_view') }}">Process Excel</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('profcy.excel') }}">Process Excel</a></li>
           </ul>
         </div>
       </div>
@@ -355,7 +355,7 @@ def excel_view():
       <div class="card-body">
         <h5 class="card-title">Process Excel Data</h5>
         <p class="card-text">Process Procfy Excel data.</p>
-        <a href="{{ url_for('procfy.excel_view') }}" class="btn btn-primary">Go</a>
+        <a href="{{ url_for('profcy.excel') }}" class="btn btn-primary">Go</a>
       </div>
     </div>
   </div>

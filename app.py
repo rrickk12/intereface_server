@@ -1,22 +1,15 @@
 from flask import Flask, render_template
 from blueprints.odoo import odoo_bp
-from blueprints.procfy import procfy_bp
+from blueprints.procfy.views import procfy
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object('config.Config')
+app = Flask(__name__)
+app.register_blueprint(odoo_bp, url_prefix='/odoo')
+print(app.url_map)
+app.register_blueprint(procfy, url_prefix='/procfy')
 
-    # Register blueprints
-    app.register_blueprint(odoo_bp, url_prefix='/odoo')
-    app.register_blueprint(procfy_bp, url_prefix='/procfy')
-
-    # Home route with card-based homepage
-    @app.route('/')
-    def home():
-        return render_template('index.html')
-
-    return app
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    app = create_app()
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
