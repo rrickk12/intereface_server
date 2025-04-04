@@ -12,7 +12,7 @@ import openpyxl
 import os
 
 
-def fill_procfy_template(novo_csv_path, procfy_template_path, output_xlsx_path):
+def fill_procfy_template(novo_csv_path, procfy_template_path, output_xlsx_path, conta_bancaria):
     """
     Lê um CSV no formato:
       Data, Descrição, Valor, Tipo Transação, Documento, Contato, Tipo, Categoria, Memo, Status
@@ -27,7 +27,7 @@ def fill_procfy_template(novo_csv_path, procfy_template_path, output_xlsx_path):
       - Recebido de/Pago a         = valor da coluna "Contato"
       - Pago?                      = "Sim"
       - Observações                = "Preenchido Automaticamente"
-      - Contas bancárias           = "Sicoob 2"
+      - Contas bancárias           = valor selecionado pelo usuário (parâmetro conta_bancaria)
       - Número de Documento / Nosso número = (em branco)
       - Modo de pagamento          = (em branco)
       - Centro de Custo            = "Indefinido"
@@ -65,8 +65,6 @@ def fill_procfy_template(novo_csv_path, procfy_template_path, output_xlsx_path):
         except ValueError:
             valor = 0.0
 
-        # Caso queira que o valor seja escrito como número no Excel com 2 casas decimais:
-        # row_values["Valor"] conterá o valor numérico e usaremos cell.number_format.
         row_values = {
             "Tipo de Lançamento": row.get("Tipo", "").strip(),
             "Data de pagamento": row.get("Data", "").strip(),
@@ -77,7 +75,8 @@ def fill_procfy_template(novo_csv_path, procfy_template_path, output_xlsx_path):
             "Recebido de/Pago a": row.get("Contato", "").strip(),
             "Pago?": "Sim",
             "Observações": "Preenchido Automaticamente",
-            "Contas bancárias": "Sicoob 2",
+            # Usa o parâmetro recebido ao invés de valor fixo
+            "Contas bancárias": conta_bancaria,
             "Número de Documento / Nosso número": "",
             "Modo de pagamento": "",
             "Centro de Custo": "Indefinido",
@@ -88,11 +87,8 @@ def fill_procfy_template(novo_csv_path, procfy_template_path, output_xlsx_path):
         for col_index, header_name in enumerate(procfy_headers, start=1):
             cell = sheet.cell(row=current_row, column=col_index)
             if header_name == "Valor":
-                # Escreve o valor numérico e define o formato para 2 casas decimais
                 cell.value = row_values.get("Valor", 0.0)
                 cell.number_format = '0.00'
-                # Se preferir armazenar como string com vírgula, use:
-                # cell.value = f"{valor:.2f}".replace(".", ",")
             else:
                 cell.value = row_values.get(header_name, "")
         current_row += 1

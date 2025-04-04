@@ -8,6 +8,15 @@
       <label for="odoo_csv" class="form-label">Selecione o arquivo CSV</label>
       <input type="file" class="form-control" id="odoo_csv" name="odoo_csv" accept=".csv" required>
     </div>
+    <!-- Seletor de Conta -->
+    <div class="mb-3">
+      <label for="account_selector" class="form-label">Selecione a conta</label>
+      <select class="form-select" id="account_selector" name="account_selector" required>
+          <option value="Sicoob 1">Sicoob 1</option>
+          <option value="Sicoob 2">Sicoob 2</option>
+          <option value="BB">BB</option>
+      </select>
+    </div>
     <button type="submit" id="excel-submit-btn" class="btn btn-primary">Enviar e Processar</button>
   </form>
 
